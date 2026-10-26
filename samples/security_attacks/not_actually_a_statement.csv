@@ -1,0 +1,3 @@
+This is just a plain text file pretending to be a bank statement.
+It has no Date/Description/Amount columns at all, just prose.
+A real parser should reject this instead of guessing.

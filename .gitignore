@@ -1,0 +1,16 @@
+.env
+.jwt_secret
+.files_key
+*.db
+uploads/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+.DS_Store
+*.log
+
+# NOTE: frontend/dist is intentionally NOT ignored — it's committed so the
+# grader can run the app with `python run.py` alone, no `npm install` needed.

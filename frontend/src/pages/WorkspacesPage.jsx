@@ -1,0 +1,140 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Home } from 'lucide-react'
+import EmptyState from '../components/EmptyState'
+import { api } from '../lib/api'
+import { formatUSDate } from '../lib/format'
+import { WORKSPACE_TYPE_LABELS } from '../lib/permissions'
+
+export default function WorkspacesPage() {
+  const navigate = useNavigate()
+  const [workspaces, setWorkspaces] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [name, setName] = useState('')
+  const [type, setType] = useState('group')
+  const [taxPackEnabled, setTaxPackEnabled] = useState(false)
+  const [state, setState] = useState('')
+  const [error, setError] = useState('')
+
+  function refresh() {
+    setLoading(true)
+    api
+      .listWorkspaces()
+      .then((list) => {
+        // Know your workspace from your login: with exactly one, skip straight to it
+        // instead of making every demo user pick from a list of one.
+        if (list.length === 1) {
+          navigate(`/workspaces/${list[0].id}`, { replace: true })
+          return
+        }
+        setWorkspaces(list)
+      })
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(refresh, [])
+
+  async function handleCreate(e) {
+    e.preventDefault()
+    setError('')
+    try {
+      await api.createWorkspace({ name, type, tax_pack_enabled: taxPackEnabled, state: type === 'business' ? state || null : null })
+      setName('')
+      setTaxPackEnabled(false)
+      setState('')
+      setShowForm(false)
+      refresh()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">Your Workspaces</h1>
+        <button
+          onClick={() => setShowForm((s) => !s)}
+          className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-medium"
+        >
+          {showForm ? 'Cancel' : '+ New Workspace'}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleCreate} className="bg-white border border-slate-200 rounded-xl card-shadow p-5 mb-6 space-y-3">
+          {error && <p className="text-sm text-rose-600">{error}</p>}
+          <label className="block text-sm text-slate-600">
+            Name
+            <input
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Oak Street House, Yale Food Bank, Corner Coffee Co."
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+            />
+          </label>
+          <label className="block text-sm text-slate-600">
+            Type
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+            >
+              <option value="group">{WORKSPACE_TYPE_LABELS.group} (2-10 people sharing money)</option>
+              <option value="nonprofit">{WORKSPACE_TYPE_LABELS.nonprofit}</option>
+              <option value="business">{WORKSPACE_TYPE_LABELS.business}</option>
+            </select>
+          </label>
+          {type === 'business' && (
+            <label className="block text-sm text-slate-600">
+              State (optional — for an accurate sales-tax estimate)
+              <input
+                value={state}
+                onChange={(e) => setState(e.target.value.toUpperCase().slice(0, 2))}
+                placeholder="e.g. CT"
+                className="mt-1 w-24 rounded-lg border border-slate-300 px-3 py-2"
+              />
+            </label>
+          )}
+          <label className="flex items-start gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3">
+            <input type="checkbox" checked={taxPackEnabled} onChange={(e) => setTaxPackEnabled(e.target.checked)} className="mt-0.5" />
+            <span>
+              <span className="font-medium text-slate-800">Also prepare tax paperwork?</span> Tax Prep Pack — optional,
+              organizes documents for a CPA/TurboTax/treasurer; never files or advises. Toggle anytime from Members.
+            </span>
+          </label>
+          <button type="submit" className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg text-sm font-medium">
+            Create
+          </button>
+        </form>
+      )}
+
+      {loading ? (
+        <p className="text-slate-500">Loading…</p>
+      ) : workspaces.length === 0 ? (
+        <EmptyState icon={Home} message="No workspaces yet — create your first one above to get started." />
+      ) : (
+        <ul className="space-y-3">
+          {workspaces.map((ws) => (
+            <li key={ws.id}>
+              <Link
+                to={`/workspaces/${ws.id}`}
+                className="block bg-white border border-slate-200 rounded-xl card-shadow p-4 hover:shadow-md transition"
+              >
+                <div className="flex items-center justify-between">
+                  <h2 className="font-semibold text-slate-900">{ws.name}</h2>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                    {WORKSPACE_TYPE_LABELS[ws.type]}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Created {formatUSDate(ws.created_at)}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}

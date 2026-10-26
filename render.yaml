@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: missionledger
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python run.py
+    healthCheckPath: /api/health
+    envVars:
+      - key: MISSIONLEDGER_ENV
+        value: production
+      - key: PORTKEY_API_KEY
+        sync: false # set the real value in Render's dashboard — never stored in this file or the repo
+      - key: MISSIONLEDGER_JWT_SECRET
+        generateValue: true # Render generates and stores a random secret; keeps logins stable across restarts
+      - key: FILES_ENCRYPTION_KEY
+        generateValue: true # Render generates and stores a random key for encrypting uploaded receipts at rest

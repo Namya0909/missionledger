@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>[Project Name] — Final Report</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --accent: #7b2cbf;
+    --accent-light: #f3e8fd;
+    --muted: #6b6b7a;
+    --border: #e2e2ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--ink);
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    line-height: 1.6;
+    background: #fff;
+  }
+  h1, h2, h3 { font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--ink); }
+  h1 { font-size: 2.2em; margin-bottom: 0.1em; }
+  .subtitle { color: var(--muted); font-size: 1.1em; margin-top: 0; }
+  h2 {
+    font-size: 1.5em;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 6px;
+    margin-top: 2.5em;
+  }
+  h3 { font-size: 1.15em; color: var(--accent); }
+  section { page-break-inside: avoid; }
+  .meta-links { margin: 1.5em 0; padding: 16px 20px; background: var(--accent-light); border-radius: 8px; }
+  .meta-links a { color: var(--accent); }
+  .todo {
+    background: #fff8e1;
+    border-left: 4px solid #f5a623;
+    padding: 10px 16px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.9em;
+    color: #7a5c00;
+    margin: 1em 0;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.95em; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+  th { background: var(--accent-light); }
+  figure { margin: 1.5em 0; text-align: center; }
+  figure img { max-width: 100%; border: 1px solid var(--border); border-radius: 6px; }
+  figcaption { font-size: 0.9em; color: var(--muted); margin-top: 6px; }
+  code, pre { font-family: 'SF Mono', Menlo, monospace; background: #f5f5f8; border-radius: 4px; }
+  pre { padding: 12px; overflow-x: auto; }
+  code { padding: 2px 5px; }
+  @media print {
+    body { padding: 0; }
+    .todo { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>[Project Name]</h1>
+<p class="subtitle">[One-sentence description of what the app does]</p>
+
+<div class="meta-links">
+  <strong>Author:</strong> Namya Sharma<br>
+  <strong>GitHub repo:</strong> <a href="#">[link]</a><br>
+  <strong>Live app (if online):</strong> <a href="#">[link]</a>
+</div>
+
+<div class="todo">TODO: Fill in title, one-sentence description, and links above once the repo exists.</div>
+
+<h2 id="motivation">1. Motivation</h2>
+<p>[Who has this problem? What does it currently cost them (time, money, quality)? Why does it matter? Use real sources/numbers where possible.]</p>
+<div class="todo">TODO: Add real evidence — stats, quotes, or sources establishing the problem is real and costly.</div>
+
+<h2 id="whats-new">2. What Is New</h2>
+<p>[What existing alternatives/tools address this problem today? What do you do differently? Be explicit — this is where novelty is judged, and "overdone" ideas are capped unless there's a genuine new twist.]</p>
+
+<h2 id="agents">3. The Agents</h2>
+<p>[Describe each agent's role, the tools it has access to, and how they're organized/orchestrated.]</p>
+<figure>
+  <img src="data:image/svg+xml;base64,PLACEHOLDER" alt="Agent architecture diagram">
+  <figcaption>Figure 1: Agent architecture diagram. [Replace with a real embedded diagram.]</figcaption>
+</figure>
+<h3>Model choice</h3>
+<p>[Which model(s) and why — e.g., gpt-6-luna via Portkey, per course requirements.]</p>
+<h3>Traced example run</h3>
+<p>[Walk through one real end-to-end run step by step, with screenshots of the actual app at each step.]</p>
+<div class="todo">TODO: Replace the placeholder diagram with a real embedded image (base64 data URI) and add real traced-run screenshots.</div>
+
+<h2 id="tokenomics">4. Tokenomics</h2>
+<p>[Report measured input, cached, and output tokens for a representative run.]</p>
+<table>
+  <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Input tokens (per run)</td><td>[TBD — measured]</td></tr>
+    <tr><td>Cached tokens (per run)</td><td>[TBD — measured]</td></tr>
+    <tr><td>Output tokens (per run)</td><td>[TBD — measured]</td></tr>
+    <tr><td>Cost per run</td><td>[TBD]</td></tr>
+    <tr><td>Cost per user per month</td><td>[TBD]</td></tr>
+    <tr><td>Cost at 100 users</td><td>[TBD]</td></tr>
+    <tr><td>Cost at 10,000 users</td><td>[TBD]</td></tr>
+  </tbody>
+</table>
+<p>[Describe any cost-cutting steps taken (caching, cheaper models, shorter prompts) and performance tradeoffs they introduced.]</p>
+<div class="todo">TODO: Replace every value above with real measured numbers from the running app — estimates alone earn at most half credit here.</div>
+
+<h2 id="safety">5. Safety</h2>
+<p>[Identify the relevant risks for this app — e.g., prompt injection, agent malfunction, overspending/runaway tool calls.]</p>
+<p>[Describe at least one defense you built, and show it working.]</p>
+<figure>
+  <img src="data:image/svg+xml;base64,PLACEHOLDER" alt="Safety defense screenshot">
+  <figcaption>Figure 2: [Screenshot of an attack attempt being blocked by the defense.]</figcaption>
+</figure>
+<div class="todo">TODO: Add a real screenshot/log showing the defense catching a real attack attempt, not just a description.</div>
+
+<h2 id="impact">6. Impact</h2>
+<p>[Quantify the benefit — time saved, cost saved, quality improved. Cite sources. Real user evidence (even a small trial) is the strongest form of evidence.]</p>
+<div class="todo">TODO: Add quantified impact numbers and, ideally, real user feedback or a small user trial.</div>
+
+<h2 id="limits">7. Limits and Next Steps</h2>
+<p>[What doesn't work yet or only partially works? What would you build next with more time?]</p>
+
+</body>
+</html>
