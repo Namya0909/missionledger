@@ -44,6 +44,7 @@ export default function GetStartedPage() {
   const [phase, setPhase] = useState('intro')
   const [messages, setMessages] = useState([]) // {role, content}
   const [input, setInput] = useState('')
+  const [joinCode, setJoinCode] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [declined, setDeclined] = useState(false)
@@ -127,6 +128,12 @@ export default function GetStartedPage() {
     const text = input.trim()
     setInput('')
     send(text)
+  }
+
+  function handleJoinCode(e) {
+    e.preventDefault()
+    const code = joinCode.trim()
+    if (code) navigate(`/join/${encodeURIComponent(code)}`)
   }
 
   function handleReply(e) {
@@ -256,6 +263,27 @@ export default function GetStartedPage() {
               Skip and create a workspace manually
             </button>
           </p>
+
+          <div className="mt-5 pt-5 border-t border-slate-100">
+            <p className="text-xs text-slate-500 mb-2 text-center">
+              Already have a join code from someone else? You can use it instead — no need to fill this in.
+            </p>
+            <form onSubmit={handleJoinCode} className="flex gap-2">
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="e.g. 7K4PXR"
+                className="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-mono tracking-widest"
+              />
+              <button
+                type="submit"
+                disabled={!joinCode.trim()}
+                className="shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50"
+              >
+                Join
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     )
