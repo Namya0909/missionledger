@@ -3,7 +3,7 @@ costs.py. Averages are computed only over responses that actually answered
 that particular field, not by treating a blank answer as zero.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,7 @@ class FeedbackSummary:
     avg_minutes_before: float | None = None
     avg_minutes_with: float | None = None
     avg_minutes_saved: float | None = None
+    by_role: dict[str, int] = field(default_factory=dict)
 
 
 def _avg(values: list[float]) -> float | None:
@@ -33,12 +34,18 @@ def compute_summary(db: Session) -> FeedbackSummary:
     with_ = [r.minutes_with for r in rows if r.minutes_with is not None]
     saved = [r.minutes_before - r.minutes_with for r in rows if r.minutes_before is not None and r.minutes_with is not None]
 
+    by_role: dict[str, int] = {}
+    for r in rows:
+        key = r.reviewer_role or "general"
+        by_role[key] = by_role.get(key, 0) + 1
+
     return FeedbackSummary(
         response_count=len(rows),
         avg_rating=_avg(ratings),
         avg_minutes_before=_avg(before),
         avg_minutes_with=_avg(with_),
         avg_minutes_saved=_avg(saved),
+        by_role=by_role,
     )
 
 

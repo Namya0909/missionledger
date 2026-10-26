@@ -264,6 +264,30 @@ Worth trying specifically:
 - **Couple icon**: a 2-person group gets an optional heart icon next to its name (top of the
   page) to confirm — entirely optional, never required.
 
+## Feedback (role-aware, for external reviewers)
+
+The "Feedback" button (bottom-left, any logged-in page) first asks **who's giving
+feedback** — Software Engineer, Tax or Accounting Professional, or Just trying it
+out — then shows a different set of questions for each:
+
+- **Software Engineer**: points them at the GitHub repo too, then asks about security
+  impressions, whether the app's "Python computes, AI only explains" rule actually
+  holds up, and whether they'd trust it with real financial data.
+- **Tax or Accounting Professional**: points them at the Tax Prep Pack specifically,
+  then asks whether its output was credible for a real client, whether the "not tax
+  advice" framing was appropriate, and whether they spotted anything factually wrong.
+- **Just trying it out**: the original simple form — star rating, minutes before/with,
+  free text.
+
+Answers are stored as `reviewer_role` + `structured_answers` (`backend/models.py`'s
+`Feedback` table; the exact question wording lives entirely in
+`frontend/src/lib/feedbackQuestions.js`, not the backend, so it can be edited without
+a schema change). **Viewing submitted feedback (`/feedback`) is restricted to a single
+owner account** (`config.FEEDBACK_ADMIN_EMAIL`, overridable via an env var of the same
+name) — deliberately not every workspace admin/treasurer/owner, since on a public
+deployment that's effectively anyone who's signed up (every new user becomes an admin
+of their own brand-new workspace immediately).
+
 ## Editing the frontend (optional, not needed to run the app)
 
 ```bash

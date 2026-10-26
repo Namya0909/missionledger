@@ -28,6 +28,12 @@ import os  # noqa: E402  (after load_dotenv so os.getenv sees the loaded values)
 PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+# The only account allowed to view submitted feedback (routers/feedback.py) — not
+# every workspace admin/treasurer/owner, since on the live site that's effectively
+# anyone who signs up (every new user becomes an admin of their own new workspace).
+# Overridable via env var for deploys where the owner logs in with a different email.
+FEEDBACK_ADMIN_EMAIL = os.getenv("FEEDBACK_ADMIN_EMAIL", "namya.sharma@yale.edu").lower()
+
 AI_MODEL_NAME = "gpt-6-luna"
 PORTKEY_BASE_URL = "https://api.portkey.ai/v1"
 

@@ -1,27 +1,25 @@
-"""App-wide feedback — submittable from any page (workspace_id optional), and a
-privileged-anywhere-gated averages/list view, same pattern as routers/costs.py.
+"""App-wide feedback — submittable from any page (workspace_id optional), but
+viewable ONLY by the single designated owner account (config.FEEDBACK_ADMIN_EMAIL)
+— deliberately NOT every workspace admin/treasurer/owner (routers/costs.py's
+pattern), since on the live site that's effectively anyone who signs up: every new
+user becomes an admin of their own brand-new workspace immediately.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-import feedback_stats
 import models
 import schemas
+import feedback_stats
 from auth import get_current_user, require_membership
 from database import get_db
-from permissions import is_privileged_anywhere
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
 
-def _require_privileged(db: Session, current_user: models.User) -> None:
-    memberships = db.query(models.Membership).filter(models.Membership.user_id == current_user.id).all()
-    if not is_privileged_anywhere(memberships):
-        raise HTTPException(
-            status.HTTP_403_FORBIDDEN,
-            "You need an admin/treasurer/owner role in at least one workspace to view feedback.",
-        )
+def _require_feedback_admin(current_user: models.User) -> None:
+    if not current_user.is_feedback_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only the project owner can view feedback.")
 
 
 @router.post("", response_model=schemas.FeedbackOut)
@@ -39,6 +37,8 @@ def submit_feedback(
         rating=payload.rating,
         minutes_before=payload.minutes_before,
         minutes_with=payload.minutes_with,
+        reviewer_role=payload.reviewer_role,
+        structured_answers=payload.structured_answers,
     )
     db.add(feedback)
     db.commit()
@@ -51,7 +51,7 @@ def list_feedback(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    _require_privileged(db, current_user)
+    _require_feedback_admin(current_user)
     return feedback_stats.raw_rows(db)
 
 
@@ -60,7 +60,7 @@ def get_feedback_summary(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    _require_privileged(db, current_user)
+    _require_feedback_admin(current_user)
     summary = feedback_stats.compute_summary(db)
     return schemas.FeedbackSummaryOut(
         response_count=summary.response_count,
@@ -68,4 +68,5 @@ def get_feedback_summary(
         avg_minutes_before=summary.avg_minutes_before,
         avg_minutes_with=summary.avg_minutes_with,
         avg_minutes_saved=summary.avg_minutes_saved,
+        by_role=summary.by_role,
     )

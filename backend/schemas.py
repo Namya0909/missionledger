@@ -39,6 +39,7 @@ class UserOut(BaseModel):
     name: str
     email: str
     created_at: datetime
+    is_feedback_admin: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -346,6 +347,8 @@ class FeedbackCreate(BaseModel):
     rating: int | None = Field(default=None, ge=1, le=5)
     minutes_before: int | None = Field(default=None, ge=0)
     minutes_with: int | None = Field(default=None, ge=0)
+    reviewer_role: str | None = None
+    structured_answers: dict | None = None
 
 
 class FeedbackOut(BaseModel):
@@ -356,6 +359,8 @@ class FeedbackOut(BaseModel):
     rating: int | None
     minutes_before: int | None
     minutes_with: int | None
+    reviewer_role: str | None
+    structured_answers: dict | None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -367,6 +372,7 @@ class FeedbackSummaryOut(BaseModel):
     avg_minutes_before: float | None
     avg_minutes_with: float | None
     avg_minutes_saved: float | None
+    by_role: dict[str, int] = Field(default_factory=dict)
 
 
 class AttentionItemOut(BaseModel):

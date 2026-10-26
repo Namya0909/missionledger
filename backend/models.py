@@ -22,6 +22,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from config import FEEDBACK_ADMIN_EMAIL
 from database import Base
 
 
@@ -152,6 +153,12 @@ class User(Base):
     locked_until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     memberships: Mapped[list["Membership"]] = relationship(back_populates="user")
+
+    @property
+    def is_feedback_admin(self) -> bool:
+        """Not a DB column — computed so schemas.UserOut's from_attributes pickup
+        reflects config.FEEDBACK_ADMIN_EMAIL without storing a redundant flag."""
+        return self.email.lower() == FEEDBACK_ADMIN_EMAIL
 
 
 class SecurityAnswer(Base):
@@ -392,4 +399,11 @@ class Feedback(Base):
     rating: Mapped[int | None] = mapped_column(Integer, nullable=True)
     minutes_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
     minutes_with: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Who's answering — picks which question set FeedbackButton.jsx showed them
+    # ("engineer" | "tax_pro" | "general"); None for feedback submitted before this
+    # existed. The exact question wording lives entirely in the frontend
+    # (frontend/src/lib/feedbackQuestions.js) — this is free-form qualitative input,
+    # not security-sensitive, so there's nothing for the backend to validate.
+    reviewer_role: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    structured_answers: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

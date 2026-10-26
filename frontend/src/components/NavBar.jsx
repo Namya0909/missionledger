@@ -19,7 +19,11 @@ export default function NavBar() {
   const currentWorkspaceId = workspaceIdFromPath(location.pathname)
   const navigate = useNavigate()
   const [workspaces, setWorkspaces] = useState([])
-  const canSeeAdminPages = isPrivilegedAnywhere(workspaces)
+  const canSeeCosts = isPrivilegedAnywhere(workspaces)
+  // Feedback is restricted to the single project-owner account (backend-enforced,
+  // config.FEEDBACK_ADMIN_EMAIL) — NOT every workspace admin/treasurer/owner, since
+  // on the live site that's effectively anyone who's signed up.
+  const canSeeFeedback = !!user?.is_feedback_admin
 
   useEffect(() => {
     if (user) api.listWorkspaces().then(setWorkspaces).catch(() => {})
@@ -51,15 +55,15 @@ export default function NavBar() {
               ))}
             </select>
           )}
-          {canSeeAdminPages && (
-            <>
-              <Link to="/costs" className="text-emerald-200 hover:text-white shrink-0">
-                Costs
-              </Link>
-              <Link to="/feedback" className="text-emerald-200 hover:text-white shrink-0">
-                Feedback
-              </Link>
-            </>
+          {canSeeCosts && (
+            <Link to="/costs" className="text-emerald-200 hover:text-white shrink-0">
+              Costs
+            </Link>
+          )}
+          {canSeeFeedback && (
+            <Link to="/feedback" className="text-emerald-200 hover:text-white shrink-0">
+              Feedback
+            </Link>
           )}
           <span className="text-emerald-200 truncate max-w-[100px] sm:max-w-none">{user.name}</span>
           <button
