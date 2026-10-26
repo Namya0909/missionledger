@@ -142,7 +142,7 @@ export default function FeedbackAdminPage() {
                 <div className="flex items-center justify-between flex-wrap gap-y-1 mb-1.5">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                      {ROLE_LABEL[r.reviewer_role] || 'Just trying it out'}
+                      {ROLE_LABEL[r.reviewer_role] || 'Others'}
                     </span>
                     <Stars rating={r.rating} />
                   </div>

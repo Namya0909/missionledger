@@ -19,6 +19,17 @@ function withQuery(path, params) {
   return qs ? `${path}?${qs}` : path
 }
 
+// On Render's free tier the database resets on every restart (see README), which
+// can silently invalidate an already-logged-in session mid-use (the token still
+// looks valid, but the user_id it points to no longer exists). Without this, every
+// panel that hits an affected endpoint shows its own confusing raw "User not found"
+// error. Catching it once, here, logs the session out cleanly instead.
+function handleExpiredSession() {
+  setToken(null)
+  const redirect = window.location.pathname + window.location.search
+  window.location.href = `/login?expired=1&redirect=${encodeURIComponent(redirect)}`
+}
+
 async function request(path, { method = 'GET', body } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   const token = getToken()
@@ -29,6 +40,14 @@ async function request(path, { method = 'GET', body } = {}) {
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
+
+  // Never trigger this for the login endpoints themselves — a wrong password/
+  // security answer is a normal 401 that the login form needs to show inline,
+  // not a reason to "log out" (there's no session yet to log out of).
+  if (res.status === 401 && token && !path.startsWith('/auth/login')) {
+    handleExpiredSession()
+    return new Promise(() => {}) // navigation is already underway; never resolve
+  }
 
   if (!res.ok) {
     let detail = res.statusText

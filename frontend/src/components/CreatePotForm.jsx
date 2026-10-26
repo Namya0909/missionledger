@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ApprovalSettingsFields from './ApprovalSettingsFields'
 import { POT_TYPE_LABELS, SPLIT_METHOD_LABELS } from '../lib/permissions'
+import { POT_PRESETS } from '../lib/potPresets'
 
 const POT_TYPES = Object.entries(POT_TYPE_LABELS).map(([value, label]) => ({ value, label }))
 
@@ -12,7 +13,9 @@ function splitCategories(text) {
   return items.length ? items : null
 }
 
-export default function CreatePotForm({ onCreate, onCancel, isGroup, members }) {
+export default function CreatePotForm({ onCreate, onCancel, isGroup, workspaceType, members }) {
+  const presets = POT_PRESETS[workspaceType] || POT_PRESETS.group
+  const [selectedPreset, setSelectedPreset] = useState(null) // preset name, or null = custom
   const [form, setForm] = useState({
     name: '',
     type: 'spending',
@@ -34,6 +37,16 @@ export default function CreatePotForm({ onCreate, onCancel, isGroup, members }) 
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
+  }
+
+  function selectPreset(preset) {
+    setSelectedPreset(preset.name)
+    setForm((f) => ({ ...f, name: preset.name, type: preset.type }))
+  }
+
+  function selectCustom() {
+    setSelectedPreset(null)
+    set('name', '')
   }
 
   const customTotal = Object.values(customShares).reduce((sum, v) => sum + (Number(v) || 0), 0)
@@ -86,8 +99,39 @@ export default function CreatePotForm({ onCreate, onCancel, isGroup, members }) 
       <h3 className="font-semibold text-slate-900">New Pot</h3>
       {error && <p className="text-sm text-rose-600">{error}</p>}
 
-      <div className="grid grid-cols-2 gap-3">
-        <label className="text-sm text-slate-600 col-span-2">
+      <div>
+        <p className="text-xs text-slate-500 mb-1.5">Quick start (or set up your own below)</p>
+        <div className="flex flex-wrap gap-1.5">
+          {presets.map((preset) => (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => selectPreset(preset)}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                selectedPreset === preset.name
+                  ? 'bg-emerald-700 border-emerald-700 text-white'
+                  : 'bg-white border-slate-300 text-slate-600 hover:border-emerald-400'
+              }`}
+            >
+              {preset.name}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={selectCustom}
+            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              selectedPreset === null && form.name === ''
+                ? 'bg-emerald-700 border-emerald-700 text-white'
+                : 'bg-white border-slate-300 text-slate-600 hover:border-emerald-400'
+            }`}
+          >
+            Custom…
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label className="text-sm text-slate-600 sm:col-span-2">
           Name
           <input
             required
@@ -97,7 +141,7 @@ export default function CreatePotForm({ onCreate, onCancel, isGroup, members }) 
           />
         </label>
 
-        <label className="text-sm text-slate-600 col-span-2">
+        <label className="text-sm text-slate-600 sm:col-span-2">
           Type
           <select
             value={form.type}
@@ -159,7 +203,7 @@ export default function CreatePotForm({ onCreate, onCancel, isGroup, members }) 
         )}
 
         {form.type === 'restricted_grant' && (
-          <label className="text-sm text-slate-600 col-span-2">
+          <label className="text-sm text-slate-600 sm:col-span-2">
             Grantor
             <input
               value={form.grantor}
@@ -188,7 +232,7 @@ export default function CreatePotForm({ onCreate, onCancel, isGroup, members }) 
           />
         </label>
 
-        <label className="text-sm text-slate-600 col-span-2">
+        <label className="text-sm text-slate-600 sm:col-span-2">
           Allowed categories (comma separated)
           <input
             value={form.allowed_categories}
@@ -197,7 +241,7 @@ export default function CreatePotForm({ onCreate, onCancel, isGroup, members }) 
             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5"
           />
         </label>
-        <label className="text-sm text-slate-600 col-span-2">
+        <label className="text-sm text-slate-600 sm:col-span-2">
           Disallowed categories (comma separated)
           <input
             value={form.disallowed_categories}

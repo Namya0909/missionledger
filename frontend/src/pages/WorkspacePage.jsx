@@ -238,7 +238,7 @@ export default function WorkspacePage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-1.5 transition-colors ${
+              className={`shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-1.5 transition-colors ${
                 tab === t ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -276,6 +276,7 @@ export default function WorkspacePage() {
                   onCreate={handleCreatePot}
                   onCancel={() => setShowPotForm(false)}
                   isGroup={isGroup}
+                  workspaceType={workspace.type}
                   members={members}
                 />
               </div>

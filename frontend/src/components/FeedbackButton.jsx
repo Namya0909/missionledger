@@ -85,7 +85,7 @@ function RoleQuestionForm({ role, onSubmit, submitting, error }) {
   )
 }
 
-function GeneralFeedbackForm({ onSubmit, submitting, error }) {
+function GeneralFeedbackForm({ reviewerRole, onSubmit, submitting, error }) {
   const [rating, setRating] = useState(0)
   const [minutesBefore, setMinutesBefore] = useState('')
   const [minutesWith, setMinutesWith] = useState('')
@@ -94,7 +94,7 @@ function GeneralFeedbackForm({ onSubmit, submitting, error }) {
   function handleSubmit(e) {
     e.preventDefault()
     onSubmit({
-      reviewer_role: 'general',
+      reviewer_role: reviewerRole,
       rating: rating || null,
       minutes_before: minutesBefore === '' ? null : Number(minutesBefore),
       minutes_with: minutesWith === '' ? null : Number(minutesWith),
@@ -238,10 +238,10 @@ export default function FeedbackButton() {
                       </button>
                     ))}
                   </div>
-                ) : role === 'general' ? (
-                  <GeneralFeedbackForm onSubmit={handleSubmit} submitting={submitting} error={error} />
-                ) : (
+                ) : FEEDBACK_SETS[role] ? (
                   <RoleQuestionForm role={role} onSubmit={handleSubmit} submitting={submitting} error={error} />
+                ) : (
+                  <GeneralFeedbackForm reviewerRole={role} onSubmit={handleSubmit} submitting={submitting} error={error} />
                 )}
               </>
             )}

@@ -46,6 +46,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const redirect = searchParams.get('redirect')
+  const expired = searchParams.get('expired') === '1'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -176,6 +177,11 @@ export default function LoginPage() {
           <form onSubmit={handleStep1} className="bg-white border border-slate-200 rounded-xl card-shadow p-8 w-full max-w-sm">
             <h1 className="text-2xl font-bold text-slate-900 mb-1">Welcome back</h1>
             <p className="text-sm text-slate-500 mb-6">Log in to MissionLedger</p>
+            {expired && (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+                Your session expired — please log in again.
+              </p>
+            )}
             {error && <p className="text-sm text-rose-600 mb-3">{error}</p>}
 
             <label className="block text-sm text-slate-600 mb-3">

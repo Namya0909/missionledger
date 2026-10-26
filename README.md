@@ -267,17 +267,19 @@ Worth trying specifically:
 ## Feedback (role-aware, for external reviewers)
 
 The "Feedback" button (bottom-left, any logged-in page) first asks **who's giving
-feedback** — Software Engineer, Tax or Accounting Professional, or Just trying it
-out — then shows a different set of questions for each:
+feedback** — Student, Corporate Professional, Accounting or Tax Professional, or
+Others — then shows a different set of questions for each:
 
-- **Software Engineer**: points them at the GitHub repo too, then asks about security
-  impressions, whether the app's "Python computes, AI only explains" rule actually
-  holds up, and whether they'd trust it with real financial data.
-- **Tax or Accounting Professional**: points them at the Tax Prep Pack specifically,
+- **Corporate Professional**: asks whether they'd use or recommend this at work,
+  whether anything about the data/login handling felt trustworthy or not, how it
+  compares to other budgeting tools they've used, and whether they'd trust it with
+  real financial data.
+- **Accounting or Tax Professional**: points them at the Tax Prep Pack specifically,
   then asks whether its output was credible for a real client, whether the "not tax
   advice" framing was appropriate, and whether they spotted anything factually wrong.
-- **Just trying it out**: the original simple form — star rating, minutes before/with,
-  free text.
+- **Student** and **Others**: the original simple form — star rating, minutes
+  before/with, free text — still tagged with their own `reviewer_role` so responses
+  stay distinguishable in the admin view and CSV even though the form is the same.
 
 Answers are stored as `reviewer_role` + `structured_answers` (`backend/models.py`'s
 `Feedback` table; the exact question wording lives entirely in
