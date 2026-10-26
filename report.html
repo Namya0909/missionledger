@@ -337,5 +337,15 @@
 </ul>
 <p>With another month, in priority order: get the Postgres persistence fix above actually deployed and confirmed live on Render (the redeploy needed to pick it up stalled and needs attention on the Render dashboard side); get the pilot feedback above and act on whatever it surfaces; move uploaded receipt files off the web service's own disk onto real object storage (the one piece of storage the Postgres migration above doesn't cover); extend the sales-tax table and 990-adjacent logic state by state; and add CAPTCHA/email verification if this were ever opened up beyond a closed pilot group.</p>
 
+<h2 id="verification">8. Appendix: How This Was Actually Verified</h2>
+<p>Beyond the 12-attack safety suite (Section 5) and the cost benchmark (Section 4), every feature this report claims was exercised end to end by hand — logging in and using it as a real person would, not just "the automated tests pass" — before being called done. A representative sample of that process, since a full build log would be excessive here:</p>
+<ul>
+  <li><strong>Account recovery:</strong> tested the wrong-answer path first (confirmed a generic rejection, and that it counts toward the exact same lockout budget as a wrong login attempt), then the correct-answer path, then confirmed the newly set password actually logs in afterward — not just that the API returned 200.</li>
+  <li><strong>Join codes:</strong> generated a code as an admin account, joined a different real account to it, and confirmed the correct workspace and role landed — run twice, once locally and once against the live deployed app specifically, since the bug being fixed (a broken invite link) was a hosting-environment issue that would not necessarily reproduce locally at all.</li>
+  <li><strong>Security-question reduction (3 to 1):</strong> re-ran signup and login end to end afterward to confirm the UI and backend agree on exactly one question, rather than trusting that a schema change alone was sufficient.</li>
+  <li><strong>A real bug report from outside this process</strong> (one role not seeing an expected pot) was reproduced from scratch in a clean environment before being called fixed, rather than patched on a guess — the fix only shipped once the reproduction confirmed what was actually failing.</li>
+</ul>
+<p>This standard — confirm the actual user-facing outcome changed, not just that a request succeeded — was applied the same way throughout this project's build, not as a one-time step added at the end.</p>
+
 </body>
 </html>
