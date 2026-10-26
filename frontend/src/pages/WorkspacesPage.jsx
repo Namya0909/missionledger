@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Home } from 'lucide-react'
+import { Home, Landmark, Store, Users } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
 import { api } from '../lib/api'
 import { formatUSDate } from '../lib/format'
-import { WORKSPACE_TYPE_LABELS } from '../lib/permissions'
+import { WORKSPACE_TYPE_ACCENT, WORKSPACE_TYPE_LABELS } from '../lib/permissions'
+
+const WORKSPACE_TYPE_ICON = { group: Users, nonprofit: Landmark, business: Store }
 
 export default function WorkspacesPage() {
   const navigate = useNavigate()
@@ -117,22 +119,30 @@ export default function WorkspacesPage() {
         <EmptyState icon={Home} message="No workspaces yet — create your first one above to get started." />
       ) : (
         <ul className="space-y-3">
-          {workspaces.map((ws) => (
-            <li key={ws.id}>
-              <Link
-                to={`/workspaces/${ws.id}`}
-                className="block bg-white border border-slate-200 rounded-xl card-shadow p-4 hover:shadow-md transition"
-              >
-                <div className="flex items-center justify-between">
-                  <h2 className="font-semibold text-slate-900">{ws.name}</h2>
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                    {WORKSPACE_TYPE_LABELS[ws.type]}
+          {workspaces.map((ws) => {
+            const Icon = WORKSPACE_TYPE_ICON[ws.type]
+            return (
+              <li key={ws.id}>
+                <Link
+                  to={`/workspaces/${ws.id}`}
+                  className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl card-shadow p-4 hover:shadow-md transition"
+                >
+                  <span className={`shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl ${WORKSPACE_TYPE_ACCENT[ws.type]}`}>
+                    {Icon && <Icon size={18} strokeWidth={1.75} />}
                   </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1">Created {formatUSDate(ws.created_at)}</p>
-              </Link>
-            </li>
-          ))}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-semibold text-slate-900 truncate">{ws.name}</h2>
+                      <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ml-2 ${WORKSPACE_TYPE_ACCENT[ws.type]}`}>
+                        {WORKSPACE_TYPE_LABELS[ws.type]}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">Created {formatUSDate(ws.created_at)}</p>
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>

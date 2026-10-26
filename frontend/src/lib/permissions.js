@@ -44,6 +44,14 @@ export const WORKSPACE_TYPE_LABELS = {
   business: 'Small Business',
 }
 
+// Same accent per workspace type everywhere one shows up (signup chooser, the
+// workspace list) so the color means the same thing across the whole app.
+export const WORKSPACE_TYPE_ACCENT = {
+  group: 'bg-blue-50 text-blue-700',
+  nonprofit: 'bg-purple-50 text-purple-700',
+  business: 'bg-orange-50 text-orange-700',
+}
+
 export const WORKSPACE_TYPE_BLURBS = {
   group: 'Split rent, groceries, and trip costs with roommates, family, or a partner — track who owes whom.',
   nonprofit: 'Track grants and spending rules, catch mistakes automatically, and get board-ready reports.',

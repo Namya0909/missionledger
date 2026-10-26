@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Landmark, Store, Users, Wallet } from 'lucide-react'
+import FinanceHeroArt from '../components/FinanceHeroArt'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth.jsx'
-import { WORKSPACE_TYPE_BLURBS, WORKSPACE_TYPE_LABELS } from '../lib/permissions'
+import { WORKSPACE_TYPE_ACCENT, WORKSPACE_TYPE_BLURBS, WORKSPACE_TYPE_LABELS } from '../lib/permissions'
 
 const TYPE_OPTIONS = [
   { type: 'group', icon: Users },
@@ -105,53 +106,61 @@ export default function SignupPage() {
 
   if (step === 'choose') {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 py-10">
-        <div className="w-full max-w-2xl text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-700 text-white mb-4">
-            <Wallet size={28} strokeWidth={1.75} />
+      <div className="px-4 py-10">
+        <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-10 items-center mb-10">
+          <div>
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-700 text-white mb-5">
+              <Wallet size={22} strokeWidth={1.75} />
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900 mb-3 leading-tight">Be your own accountant.</h1>
+            <p className="text-slate-500 text-lg max-w-md">
+              MissionLedger tracks shared money for households, nonprofits, and small businesses — AI-reviewed
+              expenses, rule checks that catch mistakes automatically, and one-button reports. Start by telling
+              us who this is for.
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to MissionLedger</h1>
-          <p className="text-slate-500 max-w-lg mx-auto">
-            Track shared money with AI-powered expense reviews, rule checks, and one-button
-            reports. Start by telling us who this is for.
-          </p>
+          <FinanceHeroArt className="w-full max-w-md mx-auto hidden sm:block" />
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-4 w-full max-w-2xl">
-          {TYPE_OPTIONS.map(({ type, icon: Icon }) => (
+        <div className="max-w-2xl mx-auto">
+          <div className="grid sm:grid-cols-3 gap-4">
+            {TYPE_OPTIONS.map(({ type, icon: Icon }) => (
+              <button
+                key={type}
+                onClick={() => {
+                  setWorkspaceType(type)
+                  setStep('form')
+                }}
+                className="text-left bg-white border border-slate-200 hover:border-emerald-400 rounded-xl card-shadow p-5 transition hover:-translate-y-0.5"
+              >
+                <div className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${WORKSPACE_TYPE_ACCENT[type]} mb-3`}>
+                  <Icon size={20} strokeWidth={1.75} />
+                </div>
+                <p className="font-semibold text-slate-900 mb-1">{WORKSPACE_TYPE_LABELS[type]}</p>
+                <p className="text-xs text-slate-500">{WORKSPACE_TYPE_BLURBS[type]}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="text-center">
             <button
-              key={type}
               onClick={() => {
-                setWorkspaceType(type)
+                setWorkspaceType(null)
                 setStep('form')
               }}
-              className="text-left bg-white border border-slate-200 hover:border-emerald-400 rounded-xl card-shadow p-5 transition hover:-translate-y-0.5"
+              className="text-sm text-slate-400 hover:text-slate-600 mt-6"
             >
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 mb-3">
-                <Icon size={20} strokeWidth={1.75} />
-              </div>
-              <p className="font-semibold text-slate-900 mb-1">{WORKSPACE_TYPE_LABELS[type]}</p>
-              <p className="text-xs text-slate-500">{WORKSPACE_TYPE_BLURBS[type]}</p>
+              Skip — I'll decide later
             </button>
-          ))}
+
+            <p className="text-sm text-slate-500 mt-8">
+              Already have an account?{' '}
+              <Link to={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'} className="text-emerald-700 font-medium">
+                Log in
+              </Link>
+            </p>
+          </div>
         </div>
-
-        <button
-          onClick={() => {
-            setWorkspaceType(null)
-            setStep('form')
-          }}
-          className="text-sm text-slate-400 hover:text-slate-600 mt-6"
-        >
-          Skip — I'll decide later
-        </button>
-
-        <p className="text-sm text-slate-500 mt-8">
-          Already have an account?{' '}
-          <Link to={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'} className="text-emerald-700 font-medium">
-            Log in
-          </Link>
-        </p>
       </div>
     )
   }
@@ -172,23 +181,6 @@ export default function SignupPage() {
             </button>
           </div>
         )}
-
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl p-3 text-center mb-3">
-          Beta for a class project. Please use the sample files or made-up numbers, not real bank
-          statements —{' '}
-          <a href="/samples/boa_statement_sample.csv" download className="underline font-medium">
-            statement
-          </a>
-          {', '}
-          <a href="/samples/receipt_sample.jpg" download className="underline font-medium">
-            receipt
-          </a>
-          {', '}
-          <a href="/samples/grant_agreement_sample.pdf" download className="underline font-medium">
-            grant PDF
-          </a>
-          .
-        </div>
 
         <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl card-shadow p-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-1">Create an account</h1>

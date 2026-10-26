@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Wallet } from 'lucide-react'
+import FinanceHeroArt from '../components/FinanceHeroArt'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth.jsx'
 
@@ -117,11 +118,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 px-4 py-10">
-      <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-700 text-white">
-        <Wallet size={22} strokeWidth={1.75} />
+    <div className="px-4 py-10">
+      <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-10 items-center mb-10">
+        <div>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-700 text-white mb-5">
+            <Wallet size={22} strokeWidth={1.75} />
+          </div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-3 leading-tight">Be your own accountant.</h1>
+          <p className="text-slate-500 text-lg max-w-md">
+            MissionLedger tracks shared money for households, nonprofits, and small businesses — AI-reviewed
+            expenses, rule checks that catch mistakes automatically, and one-button reports, all in one place.
+          </p>
+        </div>
+        <FinanceHeroArt className="w-full max-w-md mx-auto hidden sm:block" />
       </div>
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-6 w-full">
+
+      <div className="flex flex-col lg:flex-row items-start justify-center gap-6 w-full max-w-5xl mx-auto">
         {loginTicket ? (
           <form onSubmit={handleStep2} className="bg-white border border-slate-200 rounded-xl card-shadow p-8 w-full max-w-sm">
             <h1 className="text-2xl font-bold text-slate-900 mb-1">Security questions</h1>

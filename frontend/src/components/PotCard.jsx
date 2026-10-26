@@ -1,24 +1,8 @@
 import { useState } from 'react'
-import { Landmark, Shield, Target, Unlock, Wallet } from 'lucide-react'
 import PotApprovalEditor from './PotApprovalEditor'
 import { POT_TYPE_LABELS, SPLIT_METHOD_LABELS } from '../lib/permissions'
+import { getPotTheme } from '../lib/potTheme'
 import { formatUSD, formatUSDate } from '../lib/format'
-
-const TYPE_COLOR = {
-  spending: 'bg-slate-100 text-slate-700',
-  savings_goal: 'bg-emerald-100 text-emerald-800',
-  restricted_grant: 'bg-amber-100 text-amber-800',
-  reserve: 'bg-slate-200 text-slate-800',
-  free_use: 'bg-emerald-50 text-emerald-700',
-}
-
-const TYPE_ICON = {
-  spending: Wallet,
-  savings_goal: Target,
-  restricted_grant: Landmark,
-  reserve: Shield,
-  free_use: Unlock,
-}
 
 // Goals and reserves build UP toward a target — getting closer is good, so they
 // always show a positive green fill. Spending/grant pots are used DOWN from a
@@ -43,9 +27,13 @@ export default function PotCard({ pot, workspaceId, members, canManagePots, onCh
   const [editingApproval, setEditingApproval] = useState(false)
   const buildsUp = BUILDS_UP.has(pot.type)
   const barPct = pot.period_pct == null ? 0 : Math.min(100, Math.max(0, pot.period_pct))
-  const TypeIcon = TYPE_ICON[pot.type]
+  const { Icon: TypeIcon, chip, solid } = getPotTheme(pot)
 
-  let barColor = 'bg-emerald-500'
+  // Building-up pots (goals/reserves) have no "over/warning" concept — just
+  // progress toward a target — so the fill can safely use the pot's own
+  // decorative accent color. Budget-style pots keep their status-driven
+  // color (red/amber/slate) unchanged — that one's a real signal, not decor.
+  let barColor = solid
   if (!buildsUp) {
     if (pot.status === 'over') barColor = 'bg-rose-500'
     else if (pot.status === 'warning') barColor = 'bg-amber-500'
@@ -58,12 +46,12 @@ export default function PotCard({ pot, workspaceId, members, canManagePots, onCh
     <div className="w-full rounded-xl border border-slate-200 bg-white p-4 card-shadow">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className={`shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg ${TYPE_COLOR[pot.type]}`}>
-            {TypeIcon && <TypeIcon size={16} strokeWidth={2} />}
+          <span className={`shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl ${chip}`}>
+            {TypeIcon && <TypeIcon size={18} strokeWidth={2} />}
           </span>
           <h3 className="font-semibold text-slate-900 truncate">{pot.name}</h3>
         </div>
-        <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${TYPE_COLOR[pot.type]}`}>
+        <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${chip}`}>
           {POT_TYPE_LABELS[pot.type]}
         </span>
       </div>
