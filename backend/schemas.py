@@ -31,7 +31,7 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str = Field(min_length=8)
-    security_answers: list[SecurityAnswerIn] = Field(min_length=3, max_length=3)
+    security_answers: list[SecurityAnswerIn] = Field(min_length=1, max_length=1)
 
 
 class UserOut(BaseModel):
@@ -63,7 +63,22 @@ class LoginStep1Response(BaseModel):
 
 class SecurityAnswerVerify(BaseModel):
     login_ticket: str
-    answers: list[SecurityAnswerIn] = Field(min_length=3, max_length=3)
+    answers: list[SecurityAnswerIn] = Field(min_length=1, max_length=1)
+
+
+class RecoverStartRequest(BaseModel):
+    email: EmailStr
+
+
+class RecoverStartResponse(BaseModel):
+    question: SecurityQuestionOut
+
+
+class RecoverCompleteRequest(BaseModel):
+    email: EmailStr
+    question_key: str
+    answer: str
+    new_password: str = Field(min_length=8)
 
 
 class Token(BaseModel):
@@ -496,10 +511,15 @@ class CreateFromPlanRequest(BaseModel):
 
 
 class InviteLinkOut(BaseModel):
+    id: int | None = None  # None for the one-time Setup Agent flow; set for persistent codes (Part 3)
     role: Role
     label: str
     token: str
-    url: str
+
+
+class InviteCodeCreate(BaseModel):
+    role: Role
+    label: str | None = None
 
 
 class CreateFromPlanResponse(BaseModel):

@@ -8,6 +8,7 @@ import GetStartedPage from './pages/GetStartedPage'
 import JoinPage from './pages/JoinPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import WorkspacePage from './pages/WorkspacePage'
 import WorkspacesPage from './pages/WorkspacesPage'
 
@@ -18,6 +19,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/join/:token" element={<JoinPage />} />
         <Route
           path="/get-started"

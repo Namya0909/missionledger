@@ -19,10 +19,10 @@ from permissions import needs_approval
 DEMO_PASSWORD = "demo1234"
 RNG_SEED = 20261025
 
-# Every demo account uses the same 3 security questions/answers, so the frontend's
+# Every demo account uses the same security question/answer, so the frontend's
 # one-click "Try a demo" buttons can complete both login steps without per-user
 # special-casing. Kept in sync with LoginPage.jsx's DEMO_SECURITY_ANSWERS.
-DEMO_SECURITY_ANSWERS = {"color": "Blue", "pet": "Dog", "food": "Pizza"}
+DEMO_SECURITY_ANSWERS = {"color": "Blue"}
 
 
 # ---------------------------------------------------------------------------

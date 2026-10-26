@@ -46,7 +46,7 @@ requires_ai_key = pytest.mark.skipif(
 
 DEMO_PASSWORD = "demo1234"
 # Matches seed.py's DEMO_SECURITY_ANSWERS — every demo/seeded account uses these.
-DEMO_SECURITY_ANSWERS = {"color": "Blue", "pet": "Dog", "food": "Pizza"}
+DEMO_SECURITY_ANSWERS = {"color": "Blue"}
 
 
 @pytest.fixture(scope="session")

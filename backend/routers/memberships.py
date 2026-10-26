@@ -6,6 +6,7 @@ import schemas
 from audit import log_action
 from auth import get_current_user, require_membership
 from database import get_db
+from invite_codes import generate_join_code
 from models import ROLES_BY_WORKSPACE_TYPE
 from permissions import can_manage_members, is_sole_privileged_member
 from security_log import log_security_event
@@ -225,4 +226,83 @@ def remove_member(
         workspace_id=workspace_id,
         user_id=current_user.id,
         details={"removed_user_email": removed_email, "role": removed_role.value},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Join codes — a persistent, anytime replacement for the old one-time,
+# server-built invite link (which broke behind Render's proxy; see invite_codes.py).
+# ---------------------------------------------------------------------------
+
+@router.post("/invite-codes", response_model=schemas.InviteLinkOut)
+def create_invite_code(
+    workspace_id: int,
+    payload: schemas.InviteCodeCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    workspace, _ = _require_can_manage_members(
+        workspace_id, current_user, db, action_detail="Role lacks permission to create an invite code."
+    )
+    allowed_roles = ROLES_BY_WORKSPACE_TYPE[workspace.type]
+    if payload.role not in allowed_roles:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            f"Role '{payload.role.value}' is not valid for a {workspace.type.value} workspace. "
+            f"Valid roles: {', '.join(r.value for r in allowed_roles)}.",
+        )
+
+    # Reuse an existing active code for this exact role rather than piling up
+    # duplicates every time someone clicks "generate" again for the same role.
+    existing = db.query(models.InviteLink).filter_by(workspace_id=workspace_id, role=payload.role, active=True).first()
+    if existing:
+        return existing
+
+    link = models.InviteLink(
+        workspace_id=workspace_id,
+        role=payload.role,
+        label=payload.label or payload.role.value.replace("_", " ").title(),
+        token=generate_join_code(db),
+        created_by_user_id=current_user.id,
+    )
+    db.add(link)
+    db.commit()
+    db.refresh(link)
+    log_action(
+        db, action="invite_code.created", workspace_id=workspace_id, user_id=current_user.id,
+        details={"role": payload.role.value},
+    )
+    return link
+
+
+@router.get("/invite-codes", response_model=list[schemas.InviteLinkOut])
+def list_invite_codes(
+    workspace_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    _require_can_manage_members(
+        workspace_id, current_user, db, action_detail="Role lacks permission to view invite codes."
+    )
+    return db.query(models.InviteLink).filter_by(workspace_id=workspace_id, active=True).all()
+
+
+@router.delete("/invite-codes/{invite_id}", status_code=status.HTTP_204_NO_CONTENT)
+def deactivate_invite_code(
+    workspace_id: int,
+    invite_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    _require_can_manage_members(
+        workspace_id, current_user, db, action_detail="Role lacks permission to deactivate an invite code."
+    )
+    link = db.query(models.InviteLink).filter_by(id=invite_id, workspace_id=workspace_id).first()
+    if link is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Invite code not found")
+    link.active = False
+    db.commit()
+    log_action(
+        db, action="invite_code.deactivated", workspace_id=workspace_id, user_id=current_user.id,
+        details={"role": link.role.value},
     )

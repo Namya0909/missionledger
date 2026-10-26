@@ -1,15 +1,17 @@
-"""The security-question pool used at signup (pick 3) and login (answer those same
-3, along with the password). Server-authoritative — the frontend fetches this via
-GET /auth/security-questions rather than hardcoding its own copy, so there's exactly
-one place that defines the pool.
+"""The security-question pool used at signup (pick 1) and login (answer that same
+one, along with the password) — also used for account recovery (routers/auth.py's
+/recover/* endpoints) when the password itself is forgotten. Server-authoritative —
+the frontend fetches this via GET /auth/security-questions rather than hardcoding its
+own copy, so there's exactly one place that defines the pool.
 
 Deliberately a STRICT dropdown of 10 example answers per question, not free text: no
-typos/case mismatches to fight at login, at the cost of a bounded answer space (10
-options x 3 questions = 1,000 combinations for someone who already knows which 3
-questions an account uses). That's intentionally not a secret on its own — the
-existing login rate limit and 10-strikes lockout (routers/auth.py) are what actually
-make guessing impractical, the same "documented as such, not oversold" spirit as the
-app's PII redaction.
+typos/case mismatches to fight at login, at the cost of a bounded answer space (only
+10 options — 1-in-10 for someone who already knows which question an account uses).
+That's intentionally not a secret on its own — the existing login rate limit and
+10-strikes lockout (routers/auth.py) are what actually make guessing impractical, and
+with only 1 question now (down from 3) they're doing noticeably more of the real
+work than before. Same "documented as such, not oversold" spirit as the app's PII
+redaction.
 """
 
 SECURITY_QUESTIONS: dict[str, dict] = {

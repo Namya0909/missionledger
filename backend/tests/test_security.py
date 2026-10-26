@@ -22,8 +22,6 @@ SAMPLES = PROJECT_DIR / "samples" / "security_attacks"
 
 TEST_SECURITY_ANSWERS = [
     {"question_key": "color", "answer": "Blue"},
-    {"question_key": "pet", "answer": "Dog"},
-    {"question_key": "food", "answer": "Pizza"},
 ]
 
 

@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -52,9 +53,8 @@ def signup(payload: schemas.UserCreate, db: Session = Depends(get_db)):
             "That password is too common and easy to guess — please choose a different one.",
         )
 
-    question_keys = [a.question_key for a in payload.security_answers]
-    if len(set(question_keys)) != 3:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Please choose 3 different security questions")
+    # schemas.UserCreate already enforces exactly 1 answer (min_length=max_length=1);
+    # this just validates its content, same as before.
     for a in payload.security_answers:
         if not is_valid_answer(a.question_key, a.answer):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Please pick one of the listed answers for each security question")
@@ -124,7 +124,7 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Incorrect email or password")
 
     # Password's correct — don't issue the real token yet. Show that account's own
-    # 3 security questions and require those too before completing the login.
+    # security question and require it too before completing the login.
     answers = db.query(models.SecurityAnswer).filter_by(user_id=user.id).all()
     questions = [
         schemas.SecurityQuestionOut(
@@ -160,7 +160,9 @@ def verify_security(payload: schemas.SecurityAnswerVerify, db: Session = Depends
         )
 
     stored = {a.question_key: a.answer_hash for a in db.query(models.SecurityAnswer).filter_by(user_id=user.id).all()}
-    all_correct = len(payload.answers) == 3 and all(
+    # Compare against however many questions this account actually has, rather than a
+    # hardcoded literal — avoids this needing a second edit if that count ever changes again.
+    all_correct = len(payload.answers) == len(stored) and all(
         verify_security_answer(a.answer, stored.get(a.question_key, _DUMMY_ANSWER_HASH)) for a in payload.answers
     )
 
@@ -180,6 +182,83 @@ def verify_security(payload: schemas.SecurityAnswerVerify, db: Session = Depends
     user.failed_login_count = 0
     user.locked_until = None
     db.commit()
+
+    token = create_access_token(user.id)
+    return schemas.Token(access_token=token, user=schemas.UserOut.model_validate(user))
+
+
+def _fallback_question_key(email: str) -> str:
+    """Picks a real question from the pool, deterministically from the email, for an
+    account that doesn't exist (or has no security answer on file) — so /recover/start
+    always returns a real-looking question either way, never revealing via the response
+    shape whether that email has an account. Same timing-safety spirit as _DUMMY_HASH."""
+    keys = list(SECURITY_QUESTIONS.keys())
+    index = int(hashlib.sha256(email.encode()).hexdigest(), 16) % len(keys)
+    return keys[index]
+
+
+@router.post("/recover/start", response_model=schemas.RecoverStartResponse)
+def recover_start(payload: schemas.RecoverStartRequest, db: Session = Depends(get_db)):
+    email = payload.email.lower()
+    user = db.query(models.User).filter_by(email=email).first()
+    answer_row = db.query(models.SecurityAnswer).filter_by(user_id=user.id).first() if user else None
+    question_key = answer_row.question_key if answer_row else _fallback_question_key(email)
+    q = SECURITY_QUESTIONS[question_key]
+    return schemas.RecoverStartResponse(
+        question=schemas.SecurityQuestionOut(key=question_key, question=q["question"], options=q["options"])
+    )
+
+
+@router.post("/recover/complete", response_model=schemas.Token)
+def recover_complete(payload: schemas.RecoverCompleteRequest, db: Session = Depends(get_db)):
+    email = payload.email.lower()
+
+    if is_rate_limited(f"login:{email}", limit=LOGIN_RATE_LIMIT, window_seconds=LOGIN_RATE_WINDOW_SECONDS):
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            "Too many attempts. Please wait a few minutes and try again.",
+        )
+
+    user = db.query(models.User).filter_by(email=email).first()
+    if user and user.locked_until and user.locked_until > datetime.utcnow():
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "This account is temporarily locked after too many failed attempts. Try again later.",
+        )
+
+    answer_row = db.query(models.SecurityAnswer).filter_by(user_id=user.id).first() if user else None
+    stored_hash = answer_row.answer_hash if answer_row and answer_row.question_key == payload.question_key else _DUMMY_ANSWER_HASH
+    answer_ok = verify_security_answer(payload.answer, stored_hash)
+
+    if user is None or answer_row is None or not answer_ok:
+        if user is not None:
+            record_attempt(f"login:{email}", window_seconds=LOGIN_RATE_WINDOW_SECONDS)
+            user.failed_login_count += 1
+            if user.failed_login_count >= LOCKOUT_THRESHOLD:
+                user.locked_until = datetime.utcnow() + LOCKOUT_DURATION
+                log_security_event(
+                    db, defense="Login Lockout", action="locked",
+                    detail=f"Account locked after {user.failed_login_count} failed login attempts (via account recovery).",
+                    user_id=user.id,
+                )
+            db.commit()
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "That didn't match. Please try again.")
+
+    if is_common_password(payload.new_password):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "That password is too common and easy to guess — please choose a different one.",
+        )
+
+    user.password_hash = hash_password(payload.new_password)
+    user.failed_login_count = 0
+    user.locked_until = None
+    db.commit()
+    log_security_event(
+        db, defense="Account Recovery", action="password_reset",
+        detail="Password reset via security-question recovery.",
+        user_id=user.id,
+    )
 
     token = create_access_token(user.id)
     return schemas.Token(access_token=token, user=schemas.UserOut.model_validate(user))

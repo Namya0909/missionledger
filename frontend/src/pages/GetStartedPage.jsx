@@ -443,7 +443,7 @@ export default function GetStartedPage() {
       <div className="min-h-[80vh] flex items-center justify-center px-4">
         <div className="bg-white border border-slate-200 rounded-xl card-shadow p-8 w-full max-w-lg">
           <h1 className="text-2xl font-bold text-slate-900 mb-1">You're all set</h1>
-          <p className="text-sm text-slate-500 mb-5">Your workspace was created. Share these links to invite others.</p>
+          <p className="text-sm text-slate-500 mb-5">Your workspace was created. Share these codes to invite others.</p>
 
           {inviteLinks.length > 0 && (
             <div className="space-y-2 mb-6">
@@ -451,13 +451,11 @@ export default function GetStartedPage() {
                 <div key={i} className="bg-slate-50 border border-slate-200 rounded-lg p-3">
                   <p className="text-sm font-medium text-slate-800">{link.label}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <input
-                      readOnly
-                      value={link.url}
-                      className="flex-1 text-xs text-slate-500 bg-white border border-slate-200 rounded px-2 py-1"
-                    />
+                    <span className="flex-1 text-lg font-mono font-semibold tracking-widest text-slate-700 bg-white border border-slate-200 rounded px-2 py-1">
+                      {link.token}
+                    </span>
                     <button
-                      onClick={() => copyLink(link.url, i)}
+                      onClick={() => copyLink(link.token, i)}
                       className="text-xs font-medium text-emerald-700 hover:underline shrink-0"
                     >
                       {copiedIndex === i ? 'Copied!' : 'Copy'}

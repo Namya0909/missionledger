@@ -69,6 +69,8 @@ export const api = {
   getSecurityQuestions: () => request('/auth/security-questions'),
   loginStep1: (payload) => request('/auth/login', { method: 'POST', body: payload }),
   loginStep2: (payload) => request('/auth/login/verify-security', { method: 'POST', body: payload }),
+  recoverStart: (payload) => request('/auth/recover/start', { method: 'POST', body: payload }),
+  recoverComplete: (payload) => request('/auth/recover/complete', { method: 'POST', body: payload }),
   me: () => request('/auth/me'),
 
   setupMessage: (message, history) => request('/setup/message', { method: 'POST', body: { message, history } }),
@@ -88,6 +90,12 @@ export const api = {
     request(`/workspaces/${workspaceId}/members/${membershipId}`, { method: 'DELETE' }),
   updateMemberRole: (workspaceId, membershipId, role) =>
     request(`/workspaces/${workspaceId}/members/${membershipId}/role`, { method: 'PUT', body: { role } }),
+
+  listInviteCodes: (workspaceId) => request(`/workspaces/${workspaceId}/members/invite-codes`),
+  createInviteCode: (workspaceId, role) =>
+    request(`/workspaces/${workspaceId}/members/invite-codes`, { method: 'POST', body: { role } }),
+  deactivateInviteCode: (workspaceId, inviteId) =>
+    request(`/workspaces/${workspaceId}/members/invite-codes/${inviteId}`, { method: 'DELETE' }),
 
   listPots: (workspaceId) => request(`/workspaces/${workspaceId}/pots`),
   createPot: (workspaceId, payload) =>

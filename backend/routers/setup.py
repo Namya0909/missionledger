@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 import models
@@ -50,7 +50,6 @@ async def setup_message(
 @router.post("/create", response_model=schemas.CreateFromPlanResponse)
 def create_from_plan(
     payload: schemas.CreateFromPlanRequest,
-    request: Request,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
@@ -65,11 +64,10 @@ def create_from_plan(
         tax_pack_enabled=payload.tax_pack_enabled,
         state=payload.state,
     )
-    base_url = str(request.base_url).rstrip("/")
     return schemas.CreateFromPlanResponse(
         workspace_id=workspace.id,
         invite_links=[
-            schemas.InviteLinkOut(role=link.role, label=link.label, token=link.token, url=f"{base_url}/join/{link.token}")
+            schemas.InviteLinkOut(id=link.id, role=link.role, label=link.label, token=link.token)
             for link in invite_links
         ],
     )

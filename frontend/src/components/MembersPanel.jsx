@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { friendlyError } from '../lib/friendlyError'
 import { formatUSD } from '../lib/format'
@@ -201,6 +201,111 @@ function AddMemberForm({ workspaceId, roles, onChanged }) {
   )
 }
 
+function InviteCodesPanel({ workspaceId, roles }) {
+  const [codes, setCodes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState(roles[0] || '')
+  const [generating, setGenerating] = useState(false)
+  const [copiedId, setCopiedId] = useState(null)
+  const [error, setError] = useState('')
+
+  async function load() {
+    try {
+      setCodes(await api.listInviteCodes(workspaceId))
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspaceId])
+
+  async function generate() {
+    setGenerating(true)
+    setError('')
+    try {
+      await api.createInviteCode(workspaceId, role)
+      await load()
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  function copy(code, id) {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 1500)
+    })
+  }
+
+  async function deactivate(id) {
+    setError('')
+    try {
+      await api.deactivateInviteCode(workspaceId, id)
+      await load()
+    } catch (err) {
+      setError(friendlyError(err))
+    }
+  }
+
+  if (loading) return null
+
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3">
+      <p className="text-sm font-medium text-slate-800 mb-2">Invite codes</p>
+      <p className="text-xs text-slate-500 mb-3">
+        Generate a short code and share it — anyone with an account can use it to join with the role you pick.
+      </p>
+
+      <div className="flex gap-2 flex-wrap mb-3">
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="text-sm rounded-lg border border-slate-300 px-2 py-1.5"
+        >
+          {roles.map((r) => (
+            <option key={r} value={r}>
+              {ROLE_LABELS[r] || r}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={generate}
+          disabled={generating}
+          className="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50"
+        >
+          {generating ? 'Generating…' : 'Generate a join code'}
+        </button>
+      </div>
+
+      {error && <p className="text-xs text-rose-600 mb-2">{error}</p>}
+
+      {codes.length > 0 && (
+        <ul className="space-y-2">
+          {codes.map((c) => (
+            <li key={c.id} className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-2">
+              <span className="text-xs font-medium text-slate-600 w-28 shrink-0">{ROLE_LABELS[c.role] || c.role}</span>
+              <span className="flex-1 text-base font-mono font-semibold tracking-widest text-slate-700">{c.token}</span>
+              <button onClick={() => copy(c.token, c.id)} className="text-xs font-medium text-emerald-700 hover:underline shrink-0">
+                {copiedId === c.id ? 'Copied!' : 'Copy'}
+              </button>
+              <button onClick={() => deactivate(c.id)} className="text-xs text-rose-600 hover:underline shrink-0">
+                Deactivate
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 function TaxPackToggle({ workspaceId, enabled, canManage, onChanged }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -257,6 +362,7 @@ export default function MembersPanel({ workspaceId, workspaceType, workspace, me
           onChanged={onChanged}
         />
       )}
+      {canManageMembers && <InviteCodesPanel workspaceId={workspaceId} roles={roles} />}
       {canManageMembers && <AddMemberForm workspaceId={workspaceId} roles={roles} onChanged={onChanged} />}
       <ul className="divide-y divide-slate-100">
         {members.map((m) => (

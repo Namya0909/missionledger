@@ -25,7 +25,7 @@ function SecurityQuestionSlot({ index, pool, selection, otherKeys, onChange }) {
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm mb-1.5"
       >
         <option value="" disabled>
-          Security question {index + 1}…
+          Pick a question…
         </option>
         {available.map((q) => (
           <option key={q.key} value={q.key}>
@@ -71,11 +71,7 @@ export default function SignupPage() {
   const [submitting, setSubmitting] = useState(false)
 
   const [questionPool, setQuestionPool] = useState([])
-  const [securitySelections, setSecuritySelections] = useState([
-    { questionKey: '', answer: '' },
-    { questionKey: '', answer: '' },
-    { questionKey: '', answer: '' },
-  ])
+  const [securitySelections, setSecuritySelections] = useState([{ questionKey: '', answer: '' }])
 
   useEffect(() => {
     api.getSecurityQuestions().then(setQuestionPool).catch(() => setQuestionPool([]))
@@ -89,7 +85,7 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
     if (securitySelections.some((s) => !s.questionKey || !s.answer)) {
-      setError('Please choose a question and answer for all 3 security questions.')
+      setError('Please choose a security question and answer.')
       return
     }
     setSubmitting(true)
@@ -220,18 +216,16 @@ export default function SignupPage() {
 
           <div className="mb-4">
             <p className="text-sm text-slate-600 mb-1.5">
-              Security questions <span className="text-xs text-slate-400">(asked again at login, along with your password)</span>
+              Security question{' '}
+              <span className="text-xs text-slate-400">(asked again at login, along with your password — also used to recover your account if you forget your password)</span>
             </p>
-            {[0, 1, 2].map((i) => (
-              <SecurityQuestionSlot
-                key={i}
-                index={i}
-                pool={questionPool}
-                selection={securitySelections[i]}
-                otherKeys={securitySelections.filter((_, j) => j !== i).map((s) => s.questionKey).filter(Boolean)}
-                onChange={updateSelection}
-              />
-            ))}
+            <SecurityQuestionSlot
+              index={0}
+              pool={questionPool}
+              selection={securitySelections[0]}
+              otherKeys={[]}
+              onChange={updateSelection}
+            />
           </div>
 
           <label className="flex items-start gap-2 text-xs text-slate-600 mb-5 bg-slate-50 border border-slate-200 rounded-lg p-3">

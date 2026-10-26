@@ -16,7 +16,6 @@ POST /setup/create.
 
 import json
 import logging
-import secrets
 import uuid
 from datetime import date, datetime, timedelta
 from typing import Literal
@@ -29,6 +28,7 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from ai.core import MAX_AGENT_REQUESTS, NO_REASONING, get_model, log_usage
+from invite_codes import generate_join_code
 from audit import log_action
 from tax_config import DEFAULT_SALES_TAX_RATE, STATE_SALES_TAX_RATES
 
@@ -453,7 +453,7 @@ def finalize_workspace_from_plan(
     for inv in invites:
         link = models.InviteLink(
             workspace_id=workspace.id, role=models.Role(inv.role), label=inv.label,
-            token=secrets.token_urlsafe(16), created_by_user_id=user.id,
+            token=generate_join_code(db), created_by_user_id=user.id,
         )
         db.add(link)
         invite_links.append(link)

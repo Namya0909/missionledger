@@ -18,6 +18,7 @@ export default function WorkspacesPage() {
   const [taxPackEnabled, setTaxPackEnabled] = useState(false)
   const [state, setState] = useState('')
   const [error, setError] = useState('')
+  const [joinCode, setJoinCode] = useState('')
 
   function refresh() {
     setLoading(true)
@@ -52,6 +53,12 @@ export default function WorkspacesPage() {
     }
   }
 
+  function handleJoin(e) {
+    e.preventDefault()
+    const code = joinCode.trim()
+    if (code) navigate(`/join/${encodeURIComponent(code)}`)
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
@@ -63,6 +70,25 @@ export default function WorkspacesPage() {
           {showForm ? 'Cancel' : '+ New Workspace'}
         </button>
       </div>
+
+      <form onSubmit={handleJoin} className="bg-white border border-slate-200 rounded-xl card-shadow p-4 mb-6 flex items-end gap-2 flex-wrap">
+        <label className="block text-sm text-slate-600 flex-1 min-w-[160px]">
+          Have a join code?
+          <input
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            placeholder="e.g. 7K4PXR"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono tracking-widest"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={!joinCode.trim()}
+          className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+        >
+          Join
+        </button>
+      </form>
 
       {showForm && (
         <form onSubmit={handleCreate} className="bg-white border border-slate-200 rounded-xl card-shadow p-5 mb-6 space-y-3">

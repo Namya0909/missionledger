@@ -47,9 +47,9 @@ workspaces so there's something real to click through immediately (see below).
 
 ## Quick tour for graders
 
-**Log in as `maya@demo.org`** (password `demo1234`; if asked for the 3 security questions,
-every demo account answers color→Blue, pet→Dog, food→Pizza — or just click "Maya (admin)" in
-the "Try a demo" box on the login page, which answers them for you in one click) — she's the
+**Log in as `maya@demo.org`** (password `demo1234`; if asked for the security question,
+every demo account answers color→Blue — or just click "Maya (admin)" in
+the "Try a demo" box on the login page, which answers it for you in one click) — she's the
 one account with every permission (add expenses, manage pots, approve), so all four things
 below work without switching accounts.
 
@@ -100,7 +100,7 @@ Sign up with a new account and you'll land on a "Let's get you set up" page: des
 you want in one sentence (or click one of the three examples) and the Setup Agent asks up to
 4 short follow-up questions — one at a time — before handing back a **plan**, not a finished
 workspace. The plan is a set of editable cards (suggested pots, amounts, approval rules, and
-invite links to send) plus a plain-English summary; nothing is saved until you click "Create
+invite codes to share) plus a plain-English summary; nothing is saved until you click "Create
 my workspace." If the goal involves saving toward a date, the required monthly savings,
 feasibility, and (if it's not realistic) 2-3 concrete options are computed in plain Python —
 not by the AI — and just explained by it. It declines anything that isn't about setting up a
@@ -184,15 +184,20 @@ treasurers/owners, next to Intake and Reports):
   and a 30-second timeout per chat request, 5 wrong login attempts/15 min, 20 chat
   messages/minute, and the account locks after 10 wrong passwords — all with friendly messages,
   never a raw error.
-- **Security questions at login** (`security_questions.py`): at signup, pick 3 DIFFERENT
-  questions from a pool of 10 (favorite color, pet, food, sport, music genre, ice cream flavor,
-  holiday, vacation type, school subject, weather) — each answered from a strict dropdown of
-  10 example answers, not free text, so there's nothing to mistype or get wrong on case at
-  login. Logging in is 2 steps: password first, then those same 3 questions (whoever's account
-  it is), both hashed with bcrypt exactly like the password. A wrong answer counts the same as
-  a wrong password toward the existing rate limit/lockout above — that lockout, not secrecy of
-  the 10-answer list, is what actually makes guessing impractical (documented plainly here, same
-  spirit as the PII-redaction caveat above, not oversold as a stronger secret than it is).
+- **Security question at login** (`security_questions.py`): at signup, pick 1 question from a
+  pool of 10 (favorite color, pet, food, sport, music genre, ice cream flavor, holiday, vacation
+  type, school subject, weather) — answered from a strict dropdown of 10 example answers, not
+  free text, so there's nothing to mistype or get wrong on case at login. Logging in is 2 steps:
+  password first, then that same question (whoever's account it is), both hashed with bcrypt
+  exactly like the password. A wrong answer counts the same as a wrong password toward the
+  existing rate limit/lockout above — and with only 1 question from a 10-option dropdown (a
+  1-in-10 guess per attempt, not the 1-in-1,000 three questions gave), that lockout is doing
+  real work here, not just secrecy of the answer list (documented plainly, same spirit as the
+  PII-redaction caveat above, not oversold as a stronger secret than it is). The same question
+  also backs **account recovery** (`POST /auth/recover/start` + `/auth/recover/complete`): a
+  forgotten password is reset by re-answering it, with the identical rate limit/lockout budget
+  as a wrong login attempt, and a response that reveals nothing about whether an email has an
+  account (a real-looking question comes back either way).
 - **Encrypted receipts at rest** (`file_encryption.py`): a transaction's attached receipt
   photo/PDF — the only file type this app persists to disk; bank statement CSVs and grant PDFs
   are read into memory for Intake, sent to the AI redacted, and discarded, never written to

@@ -39,7 +39,7 @@ const DEMO_ACCOUNTS = [
 const DEMO_PASSWORD = 'demo1234'
 // Matches seed.py's DEMO_SECURITY_ANSWERS — every demo account uses these, so the
 // one-click buttons below can complete both login steps without showing the UI.
-const DEMO_SECURITY_ANSWERS = { color: 'Blue', pet: 'Dog', food: 'Pizza' }
+const DEMO_SECURITY_ANSWERS = { color: 'Blue' }
 
 export default function LoginPage() {
   const { completeLogin } = useAuth()
@@ -137,8 +137,8 @@ export default function LoginPage() {
       <div className="flex flex-col lg:flex-row items-start justify-center gap-6 w-full max-w-5xl mx-auto">
         {loginTicket ? (
           <form onSubmit={handleStep2} className="bg-white border border-slate-200 rounded-xl card-shadow p-8 w-full max-w-sm">
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">Security questions</h1>
-            <p className="text-sm text-slate-500 mb-6">Answer your 3 questions to finish logging in.</p>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">Security question</h1>
+            <p className="text-sm text-slate-500 mb-6">Answer it to finish logging in.</p>
             {error && <p className="text-sm text-rose-600 mb-3">{error}</p>}
 
             {questions.map((q) => (
@@ -204,6 +204,12 @@ export default function LoginPage() {
                 className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
               />
             </label>
+
+            <p className="text-sm text-right -mt-3 mb-5">
+              <Link to="/forgot-password" className="text-emerald-700 font-medium">
+                Forgot password?
+              </Link>
+            </p>
 
             <button
               type="submit"
