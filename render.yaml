@@ -1,3 +1,13 @@
+databases:
+  - name: missionledger-db
+    plan: free # free Postgres: persists across web-service redeploys/restarts
+      # (unlike the web service's own disk), but Render auto-expires a free
+      # instance 30 days after creation (14-day grace period to upgrade before
+      # deletion) — fine for the life of this course project, but re-check the
+      # Render dashboard and upgrade the plan if this needs to stay live longer.
+    databaseName: missionledger
+    user: missionledger
+
 services:
   - type: web
     name: missionledger
@@ -15,3 +25,11 @@ services:
         generateValue: true # Render generates and stores a random secret; keeps logins stable across restarts
       - key: FILES_ENCRYPTION_KEY
         generateValue: true # Render generates and stores a random key for encrypting uploaded receipts at rest
+      - key: DATABASE_URL
+        fromDatabase:
+          name: missionledger-db
+          property: connectionString
+        # Without this, the app falls back to a local SQLite file on the web
+        # service's own disk — which Render wipes on every redeploy/restart,
+        # silently deleting every real signup. This Postgres instance is a
+        # separate managed service that survives those redeploys.

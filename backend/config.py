@@ -58,7 +58,21 @@ MODEL_PRICING = {
 }
 
 DB_PATH = PROJECT_DIR / "missionledger.db"
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+
+# Render's free web-service plan has an EPHEMERAL filesystem: every redeploy (and
+# some restarts) wipes it back to a blank slate, which silently deleted every real
+# signup/login/security-answer along with the SQLite file itself. Render's Postgres
+# add-on is a separate managed service that survives web-service redeploys, so when
+# DATABASE_URL is set (wired in render.yaml to that Postgres instance) we use it
+# instead. No DATABASE_URL (plain local dev) falls back to the local SQLite file,
+# so `python run.py` still works out of the box with no extra setup.
+_raw_database_url = os.getenv("DATABASE_URL")
+if _raw_database_url:
+    # Some hosts (Render included, historically) hand out "postgres://", but
+    # SQLAlchemy's psycopg2 dialect requires the "postgresql://" scheme.
+    DATABASE_URL = _raw_database_url.replace("postgres://", "postgresql://", 1)
+else:
+    DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 UPLOADS_DIR = PROJECT_DIR / "uploads" / "receipts"
 
