@@ -10,16 +10,24 @@ export default function JoinPage() {
   const { user, loading: authLoading } = useAuth()
   const [preview, setPreview] = useState(null)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!!token)
   const [joining, setJoining] = useState(false)
+  const [codeInput, setCodeInput] = useState('')
 
   useEffect(() => {
+    if (!token) return
     api
       .getInvitePreview(token)
       .then(setPreview)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [token])
+
+  function handleCodeSubmit(e) {
+    e.preventDefault()
+    const code = codeInput.trim()
+    if (code) navigate(`/join/${encodeURIComponent(code)}`)
+  }
 
   async function handleJoin() {
     setJoining(true)
@@ -32,6 +40,31 @@ export default function JoinPage() {
     } finally {
       setJoining(false)
     }
+  }
+
+  if (!token) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4">
+        <form onSubmit={handleCodeSubmit} className="bg-white border border-slate-200 rounded-xl card-shadow p-8 w-full max-w-sm">
+          <h1 className="text-xl font-bold text-slate-900 mb-1">Join a workspace</h1>
+          <p className="text-sm text-slate-500 mb-5">Enter the join code someone shared with you.</p>
+          <input
+            value={codeInput}
+            onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+            placeholder="e.g. 7K4PXR"
+            autoFocus
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono tracking-widest mb-4"
+          />
+          <button
+            type="submit"
+            disabled={!codeInput.trim()}
+            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded-lg font-medium disabled:opacity-50"
+          >
+            Continue
+          </button>
+        </form>
+      </div>
+    )
   }
 
   if (loading || authLoading) {

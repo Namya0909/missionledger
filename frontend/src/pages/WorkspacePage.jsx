@@ -108,10 +108,14 @@ export default function WorkspacePage() {
     // catch, a rejected promise left `workspace` null forever and the page
     // just sat on "Loading…" with no explanation.
     api.getWorkspace(workspaceId).then(setWorkspace).catch((err) => setLoadError(err.message))
-    api.listPots(workspaceId).then(setPots)
-    api.listMembers(workspaceId).then(setMembers)
-    api.listAIUsage(workspaceId).then(setAIUsage)
-    api.countMyApprovals(workspaceId).then(setApprovalCount)
+    // The rest render fine with an empty default (no pots/members/etc.), which
+    // is indistinguishable from "this workspace genuinely has none" unless a
+    // transient failure here is surfaced — same class of bug as getWorkspace
+    // above, just silent instead of stuck on "Loading…".
+    api.listPots(workspaceId).then(setPots).catch((err) => setError(friendlyError(err)))
+    api.listMembers(workspaceId).then(setMembers).catch((err) => setError(friendlyError(err)))
+    api.listAIUsage(workspaceId).then(setAIUsage).catch(() => {})
+    api.countMyApprovals(workspaceId).then(setApprovalCount).catch(() => {})
   }
 
   function loadTransactions() {
@@ -122,6 +126,7 @@ export default function WorkspacePage() {
         created_by_user_id: filterPerson || undefined,
       })
       .then(setTransactions)
+      .catch((err) => setError(friendlyError(err)))
   }
 
   function loadAttention() {

@@ -22,6 +22,14 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/join/:token" element={<JoinPage />} />
         <Route
+          path="/join"
+          element={
+            <ProtectedRoute>
+              <JoinPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/get-started"
           element={
             <ProtectedRoute>

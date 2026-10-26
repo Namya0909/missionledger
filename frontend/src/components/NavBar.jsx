@@ -55,6 +55,9 @@ export default function NavBar() {
               ))}
             </select>
           )}
+          <Link to="/join" className="text-emerald-200 hover:text-white shrink-0">
+            Join workspace
+          </Link>
           {canSeeCosts && (
             <Link to="/costs" className="text-emerald-200 hover:text-white shrink-0">
               Costs
